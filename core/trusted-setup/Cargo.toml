@@ -1,0 +1,77 @@
+[package]
+name = "qross-trusted-setup"
+version = "0.1.0"
+edition = "2021"
+description = "Quantlink Qross Distributed Trusted Setup Ceremony Coordination"
+license = "BSD-3-Clause"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+# Internal dependencies
+qross-consensus = { path = "../consensus" }
+qross-validator = { path = "../validator" }
+qross-zk-circuits = { path = "../zk-circuits" }
+qross-proof-aggregation = { path = "../proof-aggregation" }
+
+# Async runtime
+async-trait = "0.1"
+futures = "0.3"
+
+# Cryptographic primitives
+blake3 = { workspace = true }
+ring = { workspace = true }
+rand = "0.8"
+rand_chacha = "0.3"
+
+# Distributed coordination
+dashmap = "5.5"
+crossbeam = "0.8"
+
+# Networking
+tonic = { workspace = true }
+prost = { workspace = true }
+
+# Metrics
+prometheus = { workspace = true }
+
+# Serialization
+bincode = "1.3"
+
+# Mathematical operations
+num-bigint = "0.4"
+num-traits = "0.2"
+
+# Polynomial operations
+ark-ff = "0.4"
+ark-poly = "0.4"
+ark-std = "0.4"
+
+# BLS signatures for ceremony verification
+bls12_381 = "0.8"
+
+# Verifiable random functions
+vrf = "0.2"
+
+# Configuration
+config = "0.14"
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+tempfile = "3.8"
+
+[[bench]]
+name = "ceremony_benchmarks"
+harness = false
+
+[[bench]]
+name = "parameter_generation_benchmarks"
+harness = false
