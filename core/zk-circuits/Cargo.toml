@@ -1,0 +1,61 @@
+[package]
+name = "qross-zk-circuits"
+version = "0.1.0"
+edition = "2021"
+description = "Quantlink Qross zk-STARK Circuit Library"
+license = "BSD-3-Clause"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+# zk-STARK dependencies
+winterfell = "0.7"
+math = "0.7"
+crypto = "0.7"
+air = "0.7"
+fri = "0.7"
+
+# Polynomial arithmetic
+ark-ff = "0.4"
+ark-poly = "0.4"
+ark-std = "0.4"
+ark-serialize = "0.4"
+
+# Cryptographic primitives
+sha3 = "0.10"
+blake3 = { workspace = true }
+ring = { workspace = true }
+
+# Merkle tree implementation
+rs_merkle = "1.4"
+
+# Performance optimization
+rayon = "1.8"
+num_cpus = "1.16"
+
+# Metrics
+prometheus = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+rand = "0.8"
+
+[[bench]]
+name = "circuit_benchmarks"
+harness = false
+
+[[bench]]
+name = "merkle_benchmarks"
+harness = false
+
+[[bench]]
+name = "proof_generation_benchmarks"
+harness = false
