@@ -1,0 +1,49 @@
+[package]
+name = "qross-state-reader"
+version = "0.1.0"
+edition = "2021"
+description = "Quantlink Qross Multi-chain State Reader"
+license = "BSD-3-Clause"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+
+# HTTP Client
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+hyper = { version = "0.14", features = ["full"] }
+
+# WebSocket
+tokio-tungstenite = { version = "0.20", features = ["rustls-tls-webpki-roots"] }
+
+# JSON-RPC
+jsonrpsee = { version = "0.21", features = ["client", "server", "ws-client", "http-client"] }
+
+# Ethereum
+ethers = { version = "2.0", features = ["rustls", "ws"] }
+
+# Substrate/Polkadot
+subxt = { version = "0.32", features = ["substrate-compat"] }
+
+# Cosmos
+cosmos-sdk-proto = "0.20"
+tendermint = "0.34"
+tendermint-rpc = { version = "0.34", features = ["http-client", "websocket-client"] }
+
+# Database
+sqlx = { workspace = true }
+redis = { workspace = true }
+
+# Metrics
+prometheus = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+tokio-test = "0.4"

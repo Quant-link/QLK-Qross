@@ -1,0 +1,62 @@
+# Multi-stage build for Rust validator node
+FROM rust:1.75-slim as builder
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    libpq-dev \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy workspace files
+COPY Cargo.toml Cargo.lock ./
+COPY core/ ./core/
+
+# Build the validator binary
+RUN cargo build --release --bin qross-validator
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libssl3 \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -r -s /bin/false qross
+
+# Create directories
+RUN mkdir -p /app/data /app/logs && \
+    chown -R qross:qross /app
+
+# Copy binary from builder stage
+COPY --from=builder /app/target/release/qross-validator /app/
+
+# Copy configuration
+COPY infrastructure/docker/configs/validator.toml /app/config.toml
+
+# Set ownership
+RUN chown -R qross:qross /app
+
+# Switch to non-root user
+USER qross
+
+# Set working directory
+WORKDIR /app
+
+# Expose ports
+EXPOSE 8080 9090 30333
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Run the validator
+CMD ["./qross-validator", "--config", "config.toml"]

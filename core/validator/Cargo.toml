@@ -1,0 +1,53 @@
+[package]
+name = "qross-validator"
+version = "0.1.0"
+edition = "2021"
+description = "Quantlink Qross Validator Node"
+license = "BSD-3-Clause"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+config = { workspace = true }
+async-trait = { workspace = true }
+
+# Cryptography
+libsecp256k1 = { workspace = true }
+ed25519-dalek = { workspace = true }
+sha2 = { workspace = true }
+blake3 = { workspace = true }
+ring = { workspace = true }
+bls12_381 = { workspace = true }
+group = { workspace = true }
+
+# Networking
+libp2p = { workspace = true }
+
+# Database
+sqlx = { workspace = true }
+redis = { workspace = true }
+
+# Metrics
+prometheus = { workspace = true }
+opentelemetry = { workspace = true }
+opentelemetry-jaeger = { workspace = true }
+
+# Local dependencies
+qross-consensus = { path = "../consensus" }
+qross-state-reader = { path = "../state-reader" }
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+
+[[bin]]
+name = "qross-validator"
+path = "src/main.rs"

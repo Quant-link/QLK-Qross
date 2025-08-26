@@ -1,0 +1,43 @@
+[package]
+name = "qross-slashing"
+version = "0.1.0"
+edition = "2021"
+description = "Quantlink Qross Slashing Engine"
+license = "BSD-3-Clause"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+
+# Cryptography for signature verification
+libsecp256k1 = { workspace = true }
+ed25519-dalek = { workspace = true }
+sha2 = { workspace = true }
+blake3 = { workspace = true }
+
+# Database
+sqlx = { workspace = true }
+redis = { workspace = true }
+
+# Metrics
+prometheus = { workspace = true }
+
+# Math for penalty calculations
+num-bigint = "0.4"
+num-rational = "0.4"
+num-traits = "0.2"
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "slashing_benchmarks"
+harness = false

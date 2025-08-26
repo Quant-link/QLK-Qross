@@ -1,0 +1,58 @@
+# Multi-stage build for TypeScript API
+FROM node:20-alpine as builder
+
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files
+COPY api/package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code
+COPY api/src ./src
+COPY api/tsconfig.json ./
+
+# Build the application
+RUN npm run build
+
+# Runtime stage
+FROM node:20-alpine
+
+# Install runtime dependencies
+RUN apk add --no-cache dumb-init curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S qross -u 1001
+
+# Create app directory
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder --chown=qross:nodejs /app/dist ./dist
+COPY --from=builder --chown=qross:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=qross:nodejs /app/package.json ./
+
+# Create logs directory
+RUN mkdir -p /app/logs && chown qross:nodejs /app/logs
+
+# Switch to non-root user
+USER qross
+
+# Expose port
+EXPOSE 4000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:4000/health || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "dist/index.js"]

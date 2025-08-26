@@ -1,0 +1,64 @@
+[workspace]
+members = [
+    "core/consensus",
+    "core/validator", 
+    "core/state-reader",
+    "core/slashing"
+]
+resolver = "2"
+
+[workspace.dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.4", features = ["derive"] }
+config = "0.14"
+async-trait = "0.1"
+
+# Cryptography
+libsecp256k1 = "0.7"
+ed25519-dalek = "2.0"
+sha2 = "0.10"
+blake3 = "1.5"
+ring = "0.17"
+bls12_381 = "0.8"
+group = "0.13"
+
+# Networking
+libp2p = { version = "0.53", features = ["tcp", "noise", "yamux", "gossipsub", "mdns", "kad"] }
+quinn = "0.10"
+rustls = "0.21"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+redis = { version = "0.24", features = ["tokio-comp"] }
+
+# Metrics and Monitoring
+prometheus = "0.13"
+opentelemetry = "0.21"
+opentelemetry-jaeger = "0.20"
+
+# Zero-Knowledge
+bellperson = "0.25"
+ff = "0.13"
+pairing = "0.23"
+
+# Testing
+proptest = "1.4"
+criterion = "0.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
