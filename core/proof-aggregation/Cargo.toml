@@ -1,0 +1,60 @@
+[package]
+name = "qross-proof-aggregation"
+version = "0.1.0"
+edition = "2021"
+description = "Quantlink Qross Proof Aggregation Protocol"
+license = "BSD-3-Clause"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+# Internal dependencies
+qross-zk-circuits = { path = "../zk-circuits" }
+qross-consensus = { path = "../consensus" }
+qross-state-reader = { path = "../state-reader" }
+
+# Async runtime
+async-trait = "0.1"
+futures = "0.3"
+
+# Data structures
+dashmap = "5.5"
+petgraph = "0.6"
+
+# Cryptographic primitives
+blake3 = { workspace = true }
+ring = { workspace = true }
+
+# Performance optimization
+rayon = "1.8"
+crossbeam = "0.8"
+
+# Metrics
+prometheus = { workspace = true }
+
+# Networking
+tonic = { workspace = true }
+prost = { workspace = true }
+
+# Configuration
+config = "0.14"
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+rand = "0.8"
+
+[[bench]]
+name = "aggregation_benchmarks"
+harness = false
+
+[[bench]]
+name = "dependency_graph_benchmarks"
+harness = false
