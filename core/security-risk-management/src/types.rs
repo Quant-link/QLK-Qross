@@ -465,3 +465,298 @@ pub struct IntegrityVerificationResult {
     pub failed_verifications: Vec<String>,
     pub confidence_score: rust_decimal::Decimal,
 }
+
+/// Temporal logic formula types
+#[derive(Debug, Clone)]
+pub struct TemporalLogicFormula {
+    pub formula_type: TemporalLogicType,
+    pub formula_text: String,
+    pub parsed_formula: String, // Simplified
+    pub variables: Vec<String>,
+    pub operators: Vec<String>,
+    pub quantifiers: Vec<String>,
+}
+
+/// Temporal logic types
+#[derive(Debug, Clone)]
+pub enum TemporalLogicType {
+    LTL, // Linear Temporal Logic
+    CTL, // Computation Tree Logic
+    CTLStar, // CTL*
+    MuCalculus, // Modal Mu-Calculus
+}
+
+/// Theorem prover backends
+#[derive(Debug, Clone)]
+pub enum TheoremProverBackend {
+    Coq { version: String },
+    Lean { version: String },
+    Isabelle { version: String },
+    Z3 { version: String },
+}
+
+/// Verification status
+#[derive(Debug, Clone)]
+pub enum VerificationStatus {
+    Queued,
+    Running { current_phase: VerificationPhase, progress_details: String },
+    Completed { result: VerificationOutcome, proof: Option<MathematicalProof> },
+    Failed { error_type: String, error_message: String },
+}
+
+/// Verification phases
+#[derive(Debug, Clone)]
+pub enum VerificationPhase {
+    PropertyParsing,
+    ModelConstruction,
+    StateSpaceGeneration,
+    ProofSearch,
+    ProofVerification,
+    ResultValidation,
+}
+
+/// Verification outcomes
+#[derive(Debug, Clone)]
+pub enum VerificationOutcome {
+    Verified { confidence_level: rust_decimal::Decimal, proof_strength: String },
+    Falsified { counterexample: String, violation_trace: String },
+    Unknown { reason: String, partial_results: Vec<String> },
+}
+
+/// Mathematical proof
+#[derive(Debug, Clone)]
+pub struct MathematicalProof {
+    pub proof_id: uuid::Uuid,
+    pub property_id: crate::formal_verification::PropertyId,
+    pub proof_type: String,
+    pub proof_structure: String,
+    pub proof_steps: Vec<String>,
+    pub lemmas: Vec<String>,
+    pub axioms_used: Vec<String>,
+}
+
+/// System invariant verification result
+#[derive(Debug, Clone)]
+pub struct SystemInvariantVerificationResult {
+    pub invariant_results: std::collections::HashMap<uuid::Uuid, VerificationOutcome>,
+    pub overall_correctness: bool,
+    pub verification_timestamp: chrono::DateTime<chrono::Utc>,
+    pub mathematical_guarantees: Vec<String>,
+}
+
+/// System correctness proof
+#[derive(Debug, Clone)]
+pub struct SystemCorrectnessProof {
+    pub proof_id: uuid::Uuid,
+    pub system_invariants: SystemInvariantVerificationResult,
+    pub layer_proofs: LayerProofs,
+    pub composed_proof: String,
+    pub mathematical_guarantees: Vec<String>,
+    pub verification_timestamp: chrono::DateTime<chrono::Utc>,
+    pub proof_validation: bool,
+}
+
+/// Layer proofs
+#[derive(Debug, Clone)]
+pub struct LayerProofs {
+    pub consensus_proof: String,
+    pub zk_verification_proof: String,
+    pub network_proof: String,
+    pub liquidity_proof: String,
+    pub governance_proof: String,
+}
+
+/// Resource usage tracking
+#[derive(Debug, Clone)]
+pub struct ResourceUsage {
+    pub cpu_time: std::time::Duration,
+    pub memory_usage: u64,
+    pub disk_usage: u64,
+    pub network_usage: u64,
+}
+
+impl ResourceUsage {
+    pub fn new() -> Self {
+        Self {
+            cpu_time: std::time::Duration::from_secs(0),
+            memory_usage: 0,
+            disk_usage: 0,
+            network_usage: 0,
+        }
+    }
+}
+
+/// Intermediate verification result
+#[derive(Debug, Clone)]
+pub struct IntermediateResult {
+    pub step_id: uuid::Uuid,
+    pub step_description: String,
+    pub result_data: String,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+/// Verification requirements
+#[derive(Debug, Clone)]
+pub struct VerificationRequirements {
+    pub timeout: std::time::Duration,
+    pub memory_limit: u64,
+    pub proof_depth_limit: u32,
+    pub required_confidence: rust_decimal::Decimal,
+}
+
+/// Proof strategy
+#[derive(Debug, Clone)]
+pub enum ProofStrategy {
+    Inductive,
+    Deductive,
+    Constructive,
+    ByContradiction,
+    CaseAnalysis,
+    Automated,
+}
+
+/// Complexity estimate
+#[derive(Debug, Clone)]
+pub struct ComplexityEstimate {
+    pub time_complexity: String,
+    pub space_complexity: String,
+    pub proof_size_estimate: u64,
+    pub difficulty_level: DifficultyLevel,
+}
+
+/// Difficulty levels
+#[derive(Debug, Clone)]
+pub enum DifficultyLevel {
+    Trivial,
+    Easy,
+    Medium,
+    Hard,
+    Extreme,
+}
+
+/// System invariant
+#[derive(Debug, Clone)]
+pub struct SystemInvariant {
+    pub invariant_id: uuid::Uuid,
+    pub invariant_name: String,
+    pub invariant_description: String,
+    pub invariant_formula: String,
+    pub invariant_scope: String,
+}
+
+/// Verification metrics
+#[derive(Debug, Clone)]
+pub struct VerificationMetrics {
+    pub total_verifications: u64,
+    pub successful_verifications: u64,
+    pub failed_verifications: u64,
+    pub average_verification_time: std::time::Duration,
+    pub total_proof_size: u64,
+    pub cache_hit_rate: rust_decimal::Decimal,
+}
+
+impl VerificationMetrics {
+    pub fn new() -> Self {
+        Self {
+            total_verifications: 0,
+            successful_verifications: 0,
+            failed_verifications: 0,
+            average_verification_time: std::time::Duration::from_secs(0),
+            total_proof_size: 0,
+            cache_hit_rate: rust_decimal::Decimal::ZERO,
+        }
+    }
+
+    pub async fn update_completion(&mut self, _verification_id: crate::formal_verification::VerificationId, outcome: &VerificationOutcome) -> crate::error::Result<()> {
+        self.total_verifications += 1;
+        match outcome {
+            VerificationOutcome::Verified { .. } => self.successful_verifications += 1,
+            _ => self.failed_verifications += 1,
+        }
+        Ok(())
+    }
+}
+
+// Additional types for formal verification
+
+#[derive(Debug, Clone)]
+pub enum IntegrityLevel { Low, Medium, High, Critical }
+
+#[derive(Debug, Clone)]
+pub enum DataClassification { Public, Internal, Confidential, Sensitive }
+
+#[derive(Debug, Clone)]
+pub enum AccessControlModel { DAC, MAC, RBAC, ABAC }
+
+#[derive(Debug, Clone)]
+pub struct ModificationConstraint { pub constraint_type: String, pub constraint_value: String }
+
+#[derive(Debug, Clone)]
+pub struct StateConstraint { pub state_name: String, pub constraint_formula: String }
+
+#[derive(Debug, Clone)]
+pub struct TransitionConstraint { pub from_state: String, pub to_state: String, pub condition: String }
+
+#[derive(Debug, Clone)]
+pub struct ProgressCondition { pub condition_name: String, pub condition_formula: String }
+
+#[derive(Debug, Clone)]
+pub struct TerminationGuarantee { pub guarantee_type: String, pub guarantee_condition: String }
+
+#[derive(Debug, Clone)]
+pub struct FairnessConstraint { pub constraint_type: String, pub constraint_condition: String }
+
+#[derive(Debug, Clone)]
+pub struct SchedulingProperty { pub property_name: String, pub property_condition: String }
+
+#[derive(Debug, Clone)]
+pub struct ResponseTimeBound { pub operation: String, pub max_time: std::time::Duration }
+
+#[derive(Debug, Clone)]
+pub struct ThroughputGuarantee { pub operation: String, pub min_throughput: rust_decimal::Decimal }
+
+#[derive(Debug, Clone)]
+pub struct PreservationCondition { pub condition_name: String, pub condition_formula: String }
+
+#[derive(Debug, Clone)]
+pub struct Precondition { pub condition_name: String, pub condition_formula: String }
+
+#[derive(Debug, Clone)]
+pub struct Postcondition { pub condition_name: String, pub condition_formula: String }
+
+#[derive(Debug, Clone)]
+pub struct Invariant { pub invariant_name: String, pub invariant_formula: String }
+
+// Placeholder types for complex verification structures
+#[derive(Debug, Clone)]
+pub struct TopologyConstraints { pub max_degree: u32, pub min_connectivity: rust_decimal::Decimal }
+
+#[derive(Debug, Clone)]
+pub struct PoolParameters { pub fee_rate: rust_decimal::Decimal, pub slippage_tolerance: rust_decimal::Decimal }
+
+#[derive(Debug, Clone)]
+pub struct RiskConstraints { pub max_exposure: rust_decimal::Decimal, pub var_limit: rust_decimal::Decimal }
+
+#[derive(Debug, Clone)]
+pub struct ThreatModel { pub threat_types: Vec<String>, pub attack_vectors: Vec<String> }
+
+#[derive(Debug, Clone)]
+pub enum FaultToleranceLevel { Basic, Standard, High, Byzantine }
+
+#[derive(Debug, Clone)]
+pub struct AuthenticationMechanism { pub mechanism_type: String, pub strength: String }
+
+#[derive(Debug, Clone)]
+pub enum IdentityVerificationLevel { Basic, Enhanced, Strong, Cryptographic }
+
+#[derive(Debug, Clone)]
+pub enum AuthorizationModel { RoleBased, AttributeBased, PolicyBased, CapabilityBased }
+
+#[derive(Debug, Clone)]
+pub struct PermissionConstraint { pub permission_type: String, pub constraint_condition: String }
+
+#[derive(Debug, Clone)]
+pub struct EvidenceRequirement { pub evidence_type: String, pub requirement_level: String }
+
+#[derive(Debug, Clone)]
+pub enum AuditTrailCompleteness { Partial, Complete, Comprehensive, Immutable }
