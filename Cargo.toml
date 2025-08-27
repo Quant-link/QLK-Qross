@@ -1,9 +1,10 @@
 [workspace]
 members = [
     "core/consensus",
-    "core/validator", 
+    "core/validator",
     "core/state-reader",
-    "core/slashing"
+    "core/slashing",
+    "networking/p2p"
 ]
 resolver = "2"
 
