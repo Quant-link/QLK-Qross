@@ -2,44 +2,16 @@
 name = "qross-consensus"
 version = "0.1.0"
 edition = "2021"
-description = "Quantlink Qross Consensus Aggregation Engine"
-license = "BSD-3-Clause"
 
 [dependencies]
-tokio = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-anyhow = { workspace = true }
-thiserror = { workspace = true }
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
-uuid = { workspace = true }
-chrono = { workspace = true }
-async-trait = { workspace = true }
-
-# Cryptography
-libsecp256k1 = { workspace = true }
-ed25519-dalek = { workspace = true }
-sha2 = { workspace = true }
-blake3 = { workspace = true }
-ring = { workspace = true }
-bls12_381 = { workspace = true }
-group = { workspace = true }
-
-# Networking
-libp2p = { workspace = true }
-
-# Database
-sqlx = { workspace = true }
-redis = { workspace = true }
-
-# Metrics
-prometheus = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+rust_decimal = { version = "1.32", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+tokio = { version = "1.0", features = ["full"] }
 
 [dev-dependencies]
-proptest = { workspace = true }
-criterion = { workspace = true }
-
-[[bench]]
-name = "consensus_benchmarks"
-harness = false
+tokio-test = "0.4"

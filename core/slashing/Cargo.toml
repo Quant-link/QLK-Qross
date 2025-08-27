@@ -38,6 +38,4 @@ num-traits = "0.2"
 proptest = { workspace = true }
 criterion = { workspace = true }
 
-[[bench]]
-name = "slashing_benchmarks"
-harness = false
+
