@@ -500,3 +500,113 @@ impl Default for OptimizationMetricsConfig {
         }
     }
 }
+
+// Additional types for batch processing optimization
+
+/// Execution requirements for transactions
+#[derive(Debug, Clone)]
+pub struct ExecutionRequirements {
+    pub estimated_duration: std::time::Duration,
+    pub priority_level: PriorityLevel,
+    pub resource_intensity: ResourceIntensity,
+    pub atomicity_requirements: AtomicityRequirements,
+}
+
+/// Resource needs for transactions
+#[derive(Debug, Clone)]
+pub struct ResourceNeeds {
+    pub cpu_requirement: rust_decimal::Decimal,
+    pub memory_requirement: rust_decimal::Decimal,
+    pub network_requirement: rust_decimal::Decimal,
+    pub storage_requirement: rust_decimal::Decimal,
+}
+
+/// Resource intensity levels
+#[derive(Debug, Clone)]
+pub enum ResourceIntensity {
+    Low,
+    Medium,
+    High,
+    Critical,
+}
+
+/// Atomicity requirements
+#[derive(Debug, Clone)]
+pub enum AtomicityRequirements {
+    None,
+    Partial,
+    Full,
+    CrossChain,
+}
+
+/// Conflict resolution strategies
+#[derive(Debug, Clone)]
+pub enum ConflictResolutionStrategy {
+    Serialize,
+    Parallelize,
+    Optimize,
+    Defer,
+}
+
+/// Task execution result
+#[derive(Debug, Clone)]
+pub struct TaskExecutionResult {
+    pub task_id: uuid::Uuid,
+    pub transaction_id: TransactionId,
+    pub execution_success: bool,
+    pub execution_time: std::time::Duration,
+    pub resource_usage: ResourceUsage,
+    pub error_message: Option<String>,
+}
+
+/// Synchronized results
+#[derive(Debug, Clone)]
+pub struct SynchronizedResults {
+    pub results: Vec<TaskExecutionResult>,
+    pub synchronization_time: std::time::Duration,
+    pub consistency_validated: bool,
+}
+
+/// Batch execution result
+#[derive(Debug, Clone)]
+pub struct BatchExecutionResult {
+    pub batch_id: crate::batch_processing::BatchId,
+    pub execution_success: bool,
+    pub executed_transactions: usize,
+    pub execution_time: std::time::Duration,
+    pub cost_savings: rust_decimal::Decimal,
+    pub efficiency_metrics: BatchEfficiencyMetrics,
+}
+
+/// Batch efficiency metrics
+#[derive(Debug, Clone)]
+pub struct BatchEfficiencyMetrics {
+    pub throughput: rust_decimal::Decimal,
+    pub resource_utilization: rust_decimal::Decimal,
+    pub parallelization_efficiency: rust_decimal::Decimal,
+}
+
+/// Dependency cache for optimization
+#[derive(Debug, Clone)]
+pub struct DependencyCache {
+    pub cache: std::collections::HashMap<TransactionId, Vec<TransactionId>>,
+    pub last_updated: chrono::DateTime<chrono::Utc>,
+}
+
+impl DependencyCache {
+    pub fn new() -> Self {
+        Self {
+            cache: std::collections::HashMap::new(),
+            last_updated: chrono::Utc::now(),
+        }
+    }
+}
+
+/// Dependency metrics for analysis
+#[derive(Debug, Clone)]
+pub struct DependencyMetrics {
+    pub total_dependencies: usize,
+    pub average_dependency_depth: rust_decimal::Decimal,
+    pub critical_path_length: usize,
+    pub parallelization_potential: rust_decimal::Decimal,
+}
