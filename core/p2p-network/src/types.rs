@@ -302,6 +302,7 @@ pub struct NetworkConfig {
     pub discovery_config: DiscoveryConfig,
     pub relay_config: RelayConfig,
     pub security_config: SecurityConfig,
+    pub network_security_config: NetworkSecurityConfig,
     pub bandwidth_config: BandwidthConfig,
     pub topology_config: TopologyConfig,
 }
@@ -517,6 +518,26 @@ pub struct GossipOptimizationConfig {
     pub optimization_interval_seconds: u64,
 }
 
+/// Network security configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkSecurityConfig {
+    pub enable_ddos_protection: bool,
+    pub enable_eclipse_prevention: bool,
+    pub enable_sybil_resistance: bool,
+    pub enable_reputation_system: bool,
+    pub enable_network_slashing: bool,
+    pub base_message_rate_limit: u64,
+    pub base_bandwidth_limit_mbps: u64,
+    pub base_connection_limit: usize,
+    pub min_reputation_threshold: f64,
+    pub min_geographic_regions: usize,
+    pub min_validator_connections: usize,
+    pub diversity_score_threshold: f64,
+    pub verification_threshold: f64,
+    pub similarity_threshold: f64,
+    pub security_update_interval_seconds: u64,
+}
+
 impl Default for NetworkConfig {
     fn default() -> Self {
         Self {
@@ -528,6 +549,7 @@ impl Default for NetworkConfig {
             discovery_config: DiscoveryConfig::default(),
             relay_config: RelayConfig::default(),
             security_config: SecurityConfig::default(),
+            network_security_config: NetworkSecurityConfig::default(),
             bandwidth_config: BandwidthConfig::default(),
             topology_config: TopologyConfig::default(),
         }
@@ -749,6 +771,28 @@ impl Default for GossipOptimizationConfig {
             batch_size_threshold: 10,
             batch_timeout_ms: 100, // 100ms
             optimization_interval_seconds: 60, // 1 minute
+        }
+    }
+}
+
+impl Default for NetworkSecurityConfig {
+    fn default() -> Self {
+        Self {
+            enable_ddos_protection: true,
+            enable_eclipse_prevention: true,
+            enable_sybil_resistance: true,
+            enable_reputation_system: true,
+            enable_network_slashing: true,
+            base_message_rate_limit: 100, // messages per second
+            base_bandwidth_limit_mbps: 10, // 10 Mbps
+            base_connection_limit: 1000,
+            min_reputation_threshold: 0.3,
+            min_geographic_regions: 3,
+            min_validator_connections: 5,
+            diversity_score_threshold: 0.7,
+            verification_threshold: 0.8,
+            similarity_threshold: 0.9,
+            security_update_interval_seconds: 30,
         }
     }
 }

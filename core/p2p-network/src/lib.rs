@@ -12,6 +12,7 @@ pub mod gossip_optimization;
 pub mod discovery;
 pub mod relay;
 pub mod security;
+pub mod network_security;
 pub mod bandwidth;
 pub mod topology;
 pub mod types;
@@ -40,6 +41,7 @@ pub struct P2PNetworkEngine {
     discovery_service: discovery::DiscoveryService,
     relay_service: relay::RelayService,
     security_manager: security::SecurityManager,
+    network_security: network_security::NetworkSecurityManager,
     bandwidth_manager: bandwidth::BandwidthManager,
     topology_manager: topology::DynamicTopologyManager,
     metrics: metrics::NetworkMetrics,
@@ -92,6 +94,7 @@ impl P2PNetworkEngine {
         let discovery_service = discovery::DiscoveryService::new(config.discovery_config.clone());
         let relay_service = relay::RelayService::new(config.relay_config.clone());
         let security_manager = security::SecurityManager::new(config.security_config.clone());
+        let network_security = network_security::NetworkSecurityManager::new(config.network_security_config.clone());
         let bandwidth_manager = bandwidth::BandwidthManager::new(config.bandwidth_config.clone());
         let topology_manager = topology::DynamicTopologyManager::new(config.topology_config.clone());
         let metrics = metrics::NetworkMetrics::new();
@@ -105,6 +108,7 @@ impl P2PNetworkEngine {
             discovery_service,
             relay_service,
             security_manager,
+            network_security,
             bandwidth_manager,
             topology_manager,
             metrics,
@@ -136,6 +140,9 @@ impl P2PNetworkEngine {
         // Start bandwidth management
         self.bandwidth_manager.start().await?;
 
+        // Start network security
+        self.network_security.start().await?;
+
         // Start topology management
         self.topology_manager.start().await?;
 
@@ -149,15 +156,21 @@ impl P2PNetworkEngine {
         Ok(())
     }
     
-    /// Send message to specific peer
-    pub async fn send_message(&self, peer_id: &PeerId, message: NetworkMessage) -> Result<()> {
+    /// Send message to specific peer with security validation
+    pub async fn send_message(&mut self, peer_id: &PeerId, message: NetworkMessage) -> Result<()> {
         let start_time = std::time::Instant::now();
-        
+
+        // Security check: Verify message is allowed
+        if !self.network_security.check_message_allowed(peer_id, &message).await? {
+            tracing::warn!("Message to peer {} blocked by security policy", peer_id);
+            return Err(NetworkError::SecurityViolation("Message blocked".to_string()));
+        }
+
         // Check connection status
         if !self.is_peer_connected(peer_id).await? {
             self.establish_connection(peer_id).await?;
         }
-        
+
         // Apply security policies
         let secured_message = self.security_manager.secure_message(&message).await?;
         
@@ -311,13 +324,19 @@ impl P2PNetworkEngine {
         Ok(response)
     }
     
-    /// Establish connection to peer
-    async fn establish_connection(&self, peer_id: &PeerId) -> Result<()> {
+    /// Establish connection to peer with security checks
+    async fn establish_connection(&mut self, peer_id: &PeerId) -> Result<()> {
         let start_time = std::time::Instant::now();
-        
+
+        // Security check: Verify peer is allowed to connect
+        if !self.network_security.check_peer_connection_allowed(peer_id).await? {
+            tracing::warn!("Connection to peer {} blocked by security policy", peer_id);
+            return Err(NetworkError::SecurityViolation("Peer connection blocked".to_string()));
+        }
+
         // Get peer addresses from discovery
         let addresses = self.discovery_service.get_peer_addresses(peer_id).await?;
-        
+
         if addresses.is_empty() {
             return Err(NetworkError::PeerNotFound(*peer_id));
         }
@@ -559,6 +578,34 @@ impl P2PNetworkEngine {
     /// Get gossip optimization statistics
     pub fn get_gossip_optimization_statistics(&self) -> &gossip_optimization::GossipOptimizationMetrics {
         self.gossip_optimizer.get_optimization_statistics()
+    }
+
+    /// Report security violation
+    pub async fn report_security_violation(
+        &mut self,
+        peer_id: &PeerId,
+        violation_type: network_security::ViolationType,
+        severity: network_security::ViolationSeverity,
+        description: String,
+    ) -> Result<()> {
+        let violation = network_security::ViolationEvent {
+            timestamp: chrono::Utc::now(),
+            violation_type,
+            severity,
+            threshold_exceeded: 1.0, // TODO: Calculate actual threshold
+            actual_value: 1.0, // TODO: Calculate actual value
+        };
+
+        self.network_security.report_violation(peer_id, violation).await?;
+
+        tracing::warn!("Security violation reported for peer {}: {}", peer_id, description);
+
+        Ok(())
+    }
+
+    /// Get network security statistics
+    pub fn get_network_security_statistics(&self) -> &network_security::SecurityMetrics {
+        self.network_security.get_security_statistics()
     }
 
     /// Get network statistics

@@ -92,6 +92,10 @@ zstd = "0.13"
 blake3 = "1.5"
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
 
+# Machine learning and statistics
+ndarray = "0.15"
+linfa = "0.7"
+
 [dev-dependencies]
 proptest = { workspace = true }
 criterion = { workspace = true }
