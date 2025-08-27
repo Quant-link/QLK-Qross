@@ -8,6 +8,7 @@ pub mod network;
 pub mod transport;
 pub mod routing;
 pub mod gossip;
+pub mod gossip_optimization;
 pub mod discovery;
 pub mod relay;
 pub mod security;
@@ -35,6 +36,7 @@ pub struct P2PNetworkEngine {
     transport_layer: transport::TransportLayer,
     routing_engine: routing::RoutingEngine,
     gossip_protocol: gossip::GossipProtocol,
+    gossip_optimizer: gossip_optimization::GossipProtocolOptimizer,
     discovery_service: discovery::DiscoveryService,
     relay_service: relay::RelayService,
     security_manager: security::SecurityManager,
@@ -86,6 +88,7 @@ impl P2PNetworkEngine {
         let transport_layer = transport::TransportLayer::new(config.transport_config.clone());
         let routing_engine = routing::RoutingEngine::new(config.routing_config.clone());
         let gossip_protocol = gossip::GossipProtocol::new(config.gossip_config.clone());
+        let gossip_optimizer = gossip_optimization::GossipProtocolOptimizer::new(config.gossip_optimization_config.clone());
         let discovery_service = discovery::DiscoveryService::new(config.discovery_config.clone());
         let relay_service = relay::RelayService::new(config.relay_config.clone());
         let security_manager = security::SecurityManager::new(config.security_config.clone());
@@ -98,6 +101,7 @@ impl P2PNetworkEngine {
             transport_layer,
             routing_engine,
             gossip_protocol,
+            gossip_optimizer,
             discovery_service,
             relay_service,
             security_manager,
@@ -172,64 +176,98 @@ impl P2PNetworkEngine {
         Ok(())
     }
     
-    /// Broadcast message to network
-    pub async fn broadcast_message(&self, message: NetworkMessage, targets: BroadcastTargets) -> Result<()> {
+    /// Broadcast message to network with optimization
+    pub async fn broadcast_message(&mut self, message: NetworkMessage, targets: BroadcastTargets) -> Result<()> {
         let start_time = std::time::Instant::now();
-        
+
         // Determine target peers
         let target_peers = self.resolve_broadcast_targets(targets).await?;
-        
-        // Use gossip protocol for efficient broadcasting
-        self.gossip_protocol.broadcast_message(message, &target_peers).await?;
-        
+
+        // Optimize message for distribution
+        let optimized = self.gossip_optimizer.optimize_message(message.clone(), &target_peers).await?;
+
+        match optimized {
+            gossip_optimization::OptimizedMessage::Duplicate => {
+                tracing::debug!("Message filtered as duplicate");
+                return Ok(());
+            }
+            gossip_optimization::OptimizedMessage::Optimized {
+                message: optimized_data,
+                targets: optimized_targets,
+                batch_strategy,
+                optimization_time
+            } => {
+                // Handle batching strategy
+                match batch_strategy {
+                    gossip_optimization::BatchStrategy::Immediate => {
+                        // Send immediately using gossip protocol
+                        let reconstructed_message = self.reconstruct_message_from_optimized(&optimized_data)?;
+                        self.gossip_protocol.broadcast_message(reconstructed_message, &optimized_targets).await?;
+                    }
+                    gossip_optimization::BatchStrategy::Batch { batch_id, estimated_delay } => {
+                        tracing::debug!("Message queued for batching: {} (delay: {:?})", batch_id, estimated_delay);
+                        // Message will be sent as part of batch
+                    }
+                    gossip_optimization::BatchStrategy::Coordinate { coordination_id, coordination_deadline } => {
+                        tracing::debug!("Message queued for coordination: {} (deadline: {:?})", coordination_id, coordination_deadline);
+                        // Message will be coordinated with proof aggregation
+                    }
+                }
+
+                self.metrics.record_message_size(optimized_data.len() as f64);
+                tracing::debug!("Message optimization took {:?}", optimization_time);
+            }
+        }
+
         self.metrics.record_broadcast_sent();
         self.metrics.record_broadcast_latency(start_time.elapsed().as_secs_f64());
-        
+
         tracing::info!("Broadcast message to {} peers", target_peers.len());
-        
+
         Ok(())
     }
     
-    /// Distribute zk-STARK proof to network
-    pub async fn distribute_proof(&self, proof: &AggregatedProof) -> Result<()> {
+    /// Distribute zk-STARK proof to network with optimization
+    pub async fn distribute_proof(&mut self, proof: &AggregatedProof, batch_info: Option<&qross_proof_aggregation::BatchInfo>) -> Result<()> {
         let start_time = std::time::Instant::now();
-        
-        // Determine optimal distribution strategy
-        let distribution_strategy = self.calculate_proof_distribution_strategy(proof).await?;
-        
+
+        // Create optimized distribution plan
+        let distribution_plan = self.gossip_optimizer.optimize_proof_distribution(proof, batch_info).await?;
+
         // Create proof distribution message
         let message = NetworkMessage::ProofDistribution {
             proof_id: proof.id,
             proof_data: self.serialize_proof(proof)?,
-            distribution_strategy: distribution_strategy.clone(),
+            distribution_strategy: self.convert_distribution_strategy(&distribution_plan.distribution_strategy),
             timestamp: Utc::now(),
         };
-        
-        // Distribute based on strategy
-        match distribution_strategy {
-            ProofDistributionStrategy::Gossip => {
-                self.gossip_protocol.distribute_proof(message).await?;
-            }
-            ProofDistributionStrategy::DirectRouting { targets } => {
-                for target in targets {
-                    self.send_message(&target, message.clone()).await?;
-                }
-            }
-            ProofDistributionStrategy::Hybrid { gossip_targets, direct_targets } => {
-                // Use gossip for general distribution
-                self.gossip_protocol.broadcast_message(message.clone(), &gossip_targets).await?;
-                
-                // Use direct routing for critical validators
-                for target in direct_targets {
-                    self.send_message(&target, message.clone()).await?;
+
+        // Execute optimized distribution
+        if distribution_plan.geographic_routing.is_empty() {
+            // Standard distribution
+            let targets: Vec<PeerId> = distribution_plan.target_validators.iter()
+                .filter_map(|validator_id| self.get_peer_for_validator(validator_id))
+                .collect();
+
+            self.broadcast_message(message, BroadcastTargets::Specific(targets)).await?;
+        } else {
+            // Geographic-optimized distribution
+            for (region, validators) in &distribution_plan.geographic_routing {
+                let regional_targets: Vec<PeerId> = validators.iter()
+                    .filter_map(|validator_id| self.get_peer_for_validator(validator_id))
+                    .collect();
+
+                if !regional_targets.is_empty() {
+                    self.broadcast_message(message.clone(), BroadcastTargets::Specific(regional_targets)).await?;
                 }
             }
         }
-        
+
         self.metrics.record_proof_distribution_time(start_time.elapsed().as_secs_f64());
-        
-        tracing::info!("Distributed proof {} using strategy {:?}", proof.id, distribution_strategy);
-        
+
+        tracing::info!("Distributed proof {} with optimized plan (estimated completion: {:?})",
+                      proof.id, distribution_plan.estimated_completion_time);
+
         Ok(())
     }
     
@@ -441,17 +479,51 @@ impl P2PNetworkEngine {
             distribution_strategy: ProofDistributionStrategy::Gossip,
             timestamp: Utc::now(),
         };
-        
+
         let cached_message = CachedMessage {
             message,
             cached_at: Utc::now(),
             access_count: 0,
             size: self.estimate_proof_size(&proof)?,
         };
-        
+
         self.message_cache.insert(MessageId::from(proof.id), cached_message);
-        
+
         Ok(())
+    }
+
+    /// Reconstruct message from optimized data
+    fn reconstruct_message_from_optimized(&self, optimized_data: &[u8]) -> Result<NetworkMessage> {
+        // TODO: Implement proper message reconstruction from compressed/optimized data
+        // For now, assume it's a serialized NetworkMessage
+        bincode::deserialize(optimized_data)
+            .map_err(|e| NetworkError::SerializationError(e.to_string()))
+    }
+
+    /// Convert distribution strategy from optimizer to network type
+    fn convert_distribution_strategy(&self, strategy: &gossip_optimization::DistributionStrategy) -> ProofDistributionStrategy {
+        match strategy.proof_type {
+            gossip_optimization::ProofType::SingleChain | gossip_optimization::ProofType::CrossChain => {
+                if strategy.geographic_distribution {
+                    ProofDistributionStrategy::Hybrid {
+                        gossip_targets: Vec::new(), // TODO: Get from strategy
+                        direct_targets: Vec::new(), // TODO: Get from strategy
+                    }
+                } else {
+                    ProofDistributionStrategy::Gossip
+                }
+            }
+            gossip_optimization::ProofType::Aggregated | gossip_optimization::ProofType::Recursive => {
+                ProofDistributionStrategy::Gossip
+            }
+        }
+    }
+
+    /// Get peer ID for validator
+    fn get_peer_for_validator(&self, validator_id: &qross_consensus::ValidatorId) -> Option<PeerId> {
+        // TODO: Implement actual validator to peer mapping
+        // This would integrate with the validator network
+        None
     }
     
     /// Perform network health check
@@ -462,6 +534,31 @@ impl P2PNetworkEngine {
     /// Get topology statistics
     pub fn get_topology_statistics(&self) -> topology::TopologyStatistics {
         self.topology_manager.get_topology_statistics()
+    }
+
+    /// Update validator performance for gossip optimization
+    pub async fn update_validator_performance(
+        &mut self,
+        validator_id: qross_consensus::ValidatorId,
+        processing_time: f64,
+        success_rate: f64,
+        bandwidth_usage: f64,
+        latency: f64,
+    ) -> Result<()> {
+        let performance_data = gossip_optimization::PerformanceDataPoint {
+            timestamp: chrono::Utc::now(),
+            processing_time,
+            success_rate,
+            bandwidth_usage,
+            latency,
+        };
+
+        self.gossip_optimizer.update_validator_performance(validator_id, performance_data).await
+    }
+
+    /// Get gossip optimization statistics
+    pub fn get_gossip_optimization_statistics(&self) -> &gossip_optimization::GossipOptimizationMetrics {
+        self.gossip_optimizer.get_optimization_statistics()
     }
 
     /// Get network statistics

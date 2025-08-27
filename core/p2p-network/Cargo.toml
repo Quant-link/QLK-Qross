@@ -88,6 +88,10 @@ config = "0.14"
 lz4_flex = "0.11"
 zstd = "0.13"
 
+# Bloom filter and hashing
+blake3 = "1.5"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+
 [dev-dependencies]
 proptest = { workspace = true }
 criterion = { workspace = true }

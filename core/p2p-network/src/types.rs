@@ -298,6 +298,7 @@ pub struct NetworkConfig {
     pub transport_config: TransportConfig,
     pub routing_config: RoutingConfig,
     pub gossip_config: GossipConfig,
+    pub gossip_optimization_config: GossipOptimizationConfig,
     pub discovery_config: DiscoveryConfig,
     pub relay_config: RelayConfig,
     pub security_config: SecurityConfig,
@@ -498,6 +499,24 @@ pub struct TopologyDegradationThresholds {
     pub delivery_rate_threshold: f64,
 }
 
+/// Gossip optimization configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GossipOptimizationConfig {
+    pub enable_deduplication: bool,
+    pub enable_compression: bool,
+    pub enable_batching: bool,
+    pub enable_topic_optimization: bool,
+    pub enable_proof_distribution_optimization: bool,
+    pub bloom_filter_size: usize,
+    pub false_positive_rate: f64,
+    pub message_cache_size: usize,
+    pub default_ttl_seconds: u64,
+    pub compression_algorithms: Vec<String>,
+    pub batch_size_threshold: usize,
+    pub batch_timeout_ms: u64,
+    pub optimization_interval_seconds: u64,
+}
+
 impl Default for NetworkConfig {
     fn default() -> Self {
         Self {
@@ -505,6 +524,7 @@ impl Default for NetworkConfig {
             transport_config: TransportConfig::default(),
             routing_config: RoutingConfig::default(),
             gossip_config: GossipConfig::default(),
+            gossip_optimization_config: GossipOptimizationConfig::default(),
             discovery_config: DiscoveryConfig::default(),
             relay_config: RelayConfig::default(),
             security_config: SecurityConfig::default(),
@@ -709,6 +729,26 @@ impl Default for TopologyDegradationThresholds {
             bandwidth_decrease_threshold: 0.5,
             reliability_decrease_threshold: 0.1,
             delivery_rate_threshold: 0.95,
+        }
+    }
+}
+
+impl Default for GossipOptimizationConfig {
+    fn default() -> Self {
+        Self {
+            enable_deduplication: true,
+            enable_compression: true,
+            enable_batching: true,
+            enable_topic_optimization: true,
+            enable_proof_distribution_optimization: true,
+            bloom_filter_size: 1000000, // 1M elements
+            false_positive_rate: 0.01, // 1%
+            message_cache_size: 10000,
+            default_ttl_seconds: 300, // 5 minutes
+            compression_algorithms: vec!["lz4".to_string(), "zstd".to_string()],
+            batch_size_threshold: 10,
+            batch_timeout_ms: 100, // 100ms
+            optimization_interval_seconds: 60, // 1 minute
         }
     }
 }
