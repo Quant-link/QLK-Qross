@@ -12,6 +12,7 @@ pub mod discovery;
 pub mod relay;
 pub mod security;
 pub mod bandwidth;
+pub mod topology;
 pub mod types;
 pub mod error;
 pub mod metrics;
@@ -38,6 +39,7 @@ pub struct P2PNetworkEngine {
     relay_service: relay::RelayService,
     security_manager: security::SecurityManager,
     bandwidth_manager: bandwidth::BandwidthManager,
+    topology_manager: topology::DynamicTopologyManager,
     metrics: metrics::NetworkMetrics,
     config: NetworkConfig,
     active_connections: dashmap::DashMap<PeerId, ConnectionInfo>,
@@ -88,6 +90,7 @@ impl P2PNetworkEngine {
         let relay_service = relay::RelayService::new(config.relay_config.clone());
         let security_manager = security::SecurityManager::new(config.security_config.clone());
         let bandwidth_manager = bandwidth::BandwidthManager::new(config.bandwidth_config.clone());
+        let topology_manager = topology::DynamicTopologyManager::new(config.topology_config.clone());
         let metrics = metrics::NetworkMetrics::new();
         
         Self {
@@ -99,6 +102,7 @@ impl P2PNetworkEngine {
             relay_service,
             security_manager,
             bandwidth_manager,
+            topology_manager,
             metrics,
             config,
             active_connections: dashmap::DashMap::new(),
@@ -127,7 +131,10 @@ impl P2PNetworkEngine {
         
         // Start bandwidth management
         self.bandwidth_manager.start().await?;
-        
+
+        // Start topology management
+        self.topology_manager.start().await?;
+
         // Begin network operations
         self.network_manager.start().await?;
         
@@ -447,11 +454,21 @@ impl P2PNetworkEngine {
         Ok(())
     }
     
+    /// Perform network health check
+    pub async fn perform_health_check(&mut self) -> Result<topology::NetworkHealthReport> {
+        self.topology_manager.perform_health_check().await
+    }
+
+    /// Get topology statistics
+    pub fn get_topology_statistics(&self) -> topology::TopologyStatistics {
+        self.topology_manager.get_topology_statistics()
+    }
+
     /// Get network statistics
     pub fn get_network_statistics(&self) -> NetworkStatistics {
         let active_connections = self.active_connections.len();
         let cached_messages = self.message_cache.len();
-        
+
         NetworkStatistics {
             active_connections,
             cached_messages,

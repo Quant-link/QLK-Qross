@@ -302,6 +302,7 @@ pub struct NetworkConfig {
     pub relay_config: RelayConfig,
     pub security_config: SecurityConfig,
     pub bandwidth_config: BandwidthConfig,
+    pub topology_config: TopologyConfig,
 }
 
 /// Network manager configuration
@@ -477,6 +478,26 @@ pub enum CompressionAlgorithm {
     Brotli,
 }
 
+/// Topology configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TopologyConfig {
+    pub monitoring_interval: u64,
+    pub health_check_timeout: u64,
+    pub rebalancing_cooldown: u64,
+    pub enable_auto_rebalancing: bool,
+    pub max_concurrent_rebalancing: usize,
+    pub degradation_thresholds: TopologyDegradationThresholds,
+}
+
+/// Topology degradation thresholds
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TopologyDegradationThresholds {
+    pub latency_increase_threshold: f64,
+    pub bandwidth_decrease_threshold: f64,
+    pub reliability_decrease_threshold: f64,
+    pub delivery_rate_threshold: f64,
+}
+
 impl Default for NetworkConfig {
     fn default() -> Self {
         Self {
@@ -488,6 +509,7 @@ impl Default for NetworkConfig {
             relay_config: RelayConfig::default(),
             security_config: SecurityConfig::default(),
             bandwidth_config: BandwidthConfig::default(),
+            topology_config: TopologyConfig::default(),
         }
     }
 }
@@ -663,6 +685,30 @@ impl Default for CompressionConfig {
             algorithm: CompressionAlgorithm::LZ4,
             compression_level: 3,
             min_size_threshold: 1024,
+        }
+    }
+}
+
+impl Default for TopologyConfig {
+    fn default() -> Self {
+        Self {
+            monitoring_interval: 30,
+            health_check_timeout: 10,
+            rebalancing_cooldown: 300,
+            enable_auto_rebalancing: true,
+            max_concurrent_rebalancing: 2,
+            degradation_thresholds: TopologyDegradationThresholds::default(),
+        }
+    }
+}
+
+impl Default for TopologyDegradationThresholds {
+    fn default() -> Self {
+        Self {
+            latency_increase_threshold: 2.0,
+            bandwidth_decrease_threshold: 0.5,
+            reliability_decrease_threshold: 0.1,
+            delivery_rate_threshold: 0.95,
         }
     }
 }
