@@ -610,3 +610,120 @@ pub struct DependencyMetrics {
     pub critical_path_length: usize,
     pub parallelization_potential: rust_decimal::Decimal,
 }
+
+// Additional types for distributed cache layer
+
+/// Resource usage tracking
+#[derive(Debug, Clone)]
+pub struct ResourceUsage {
+    pub cpu_time: std::time::Duration,
+    pub memory_bytes: u64,
+    pub network_bytes: u64,
+    pub storage_bytes: u64,
+}
+
+impl ResourceUsage {
+    pub fn new() -> Self {
+        Self {
+            cpu_time: std::time::Duration::from_millis(0),
+            memory_bytes: 0,
+            network_bytes: 0,
+            storage_bytes: 0,
+        }
+    }
+}
+
+/// Batch cache operation for coordination
+#[derive(Debug, Clone)]
+pub struct BatchCacheOperation {
+    pub operation_type: CacheOperationType,
+    pub cache_keys: Vec<CacheKey>,
+    pub priority: CachePriority,
+    pub locality_hint: Option<NodeId>,
+}
+
+/// Cache operation types
+#[derive(Debug, Clone)]
+pub enum CacheOperationType {
+    Read,
+    Write,
+    Invalidate,
+    PreWarm,
+}
+
+/// Cache performance metrics
+#[derive(Debug, Clone)]
+pub struct CachePerformanceMetrics {
+    pub hit_rate: f64,
+    pub miss_rate: f64,
+    pub average_response_time: std::time::Duration,
+    pub memory_utilization: f64,
+    pub network_efficiency: f64,
+    pub data_locality_score: f64,
+    pub consistency_score: f64,
+    pub eviction_efficiency: f64,
+}
+
+/// Batch access pattern for optimization
+#[derive(Debug, Clone)]
+pub struct BatchAccessPattern {
+    pub access_frequency: std::collections::HashMap<CacheKey, u64>,
+    pub access_sequence: Vec<CacheKey>,
+    pub locality_requirements: Vec<LocalityRequirement>,
+}
+
+impl Default for BatchAccessPattern {
+    fn default() -> Self {
+        Self {
+            access_frequency: std::collections::HashMap::new(),
+            access_sequence: Vec::new(),
+            locality_requirements: Vec::new(),
+        }
+    }
+}
+
+/// Locality requirement for data placement
+#[derive(Debug, Clone)]
+pub struct LocalityRequirement {
+    pub cache_key: CacheKey,
+    pub preferred_nodes: Vec<NodeId>,
+    pub latency_requirement: std::time::Duration,
+}
+
+/// Network topology for cache optimization
+#[derive(Debug, Clone)]
+pub struct NetworkTopology {
+    pub validator_nodes: Vec<NodeId>,
+    pub network_latency_matrix: std::collections::HashMap<(NodeId, NodeId), std::time::Duration>,
+    pub bandwidth_matrix: std::collections::HashMap<(NodeId, NodeId), u64>,
+}
+
+impl NetworkTopology {
+    pub fn get_validator_nodes(&self) -> Vec<NodeId> {
+        self.validator_nodes.clone()
+    }
+}
+
+impl Default for NetworkTopology {
+    fn default() -> Self {
+        Self {
+            validator_nodes: vec![
+                NodeId(uuid::Uuid::new_v4()),
+                NodeId(uuid::Uuid::new_v4()),
+                NodeId(uuid::Uuid::new_v4()),
+            ],
+            network_latency_matrix: std::collections::HashMap::new(),
+            bandwidth_matrix: std::collections::HashMap::new(),
+        }
+    }
+}
+
+/// Node identifier for network topology
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct NodeId(pub uuid::Uuid);
+
+impl NodeId {
+    pub fn new() -> Self {
+        Self(uuid::Uuid::new_v4())
+    }
+}

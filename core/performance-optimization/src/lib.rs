@@ -5,6 +5,7 @@
 
 pub mod fee_optimization;
 pub mod batch_processing;
+pub mod distributed_cache;
 pub mod performance_monitoring;
 pub mod adaptive_algorithms;
 pub mod cost_modeling;
@@ -17,6 +18,7 @@ pub mod error;
 // Re-export main components
 pub use fee_optimization::*;
 pub use batch_processing::*;
+pub use distributed_cache::*;
 pub use performance_monitoring::*;
 pub use adaptive_algorithms::*;
 pub use cost_modeling::*;
