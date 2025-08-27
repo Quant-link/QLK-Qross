@@ -794,3 +794,308 @@ pub struct ResponseCoordinator {
     pub response_strategies: Vec<String>,
     pub escalation_policies: std::collections::HashMap<String, String>,
 }
+
+/// Portfolio identifier
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PortfolioId(pub uuid::Uuid);
+
+impl PortfolioId {
+    pub fn new() -> Self {
+        Self(uuid::Uuid::new_v4())
+    }
+}
+
+/// Trade request for slippage protection
+#[derive(Debug, Clone)]
+pub struct TradeRequest {
+    pub trade_id: uuid::Uuid,
+    pub pool_id: PoolId,
+    pub input_asset: AssetId,
+    pub output_asset: AssetId,
+    pub input_amount: Decimal,
+    pub min_output_amount: Decimal,
+    pub max_slippage: Decimal,
+    pub deadline: chrono::DateTime<chrono::Utc>,
+    pub trader_address: String,
+}
+
+/// Slippage protection result
+#[derive(Debug, Clone)]
+pub struct SlippageProtectionResult {
+    pub original_trade: TradeRequest,
+    pub protected_trade: ProtectedTrade,
+    pub market_condition: crate::risk_management::MarketCondition,
+    pub dynamic_thresholds: DynamicThresholds,
+    pub mev_risk_assessment: MEVRiskAssessment,
+    pub protection_strategy: SlippageProtectionStrategy,
+    pub estimated_slippage: Decimal,
+}
+
+/// Protected trade with risk mitigation
+#[derive(Debug, Clone)]
+pub struct ProtectedTrade {
+    pub trade_id: uuid::Uuid,
+    pub pool_id: PoolId,
+    pub input_asset: AssetId,
+    pub output_asset: AssetId,
+    pub input_amount: Decimal,
+    pub min_output_amount: Decimal,
+    pub adjusted_slippage: Decimal,
+    pub protection_mechanisms: Vec<String>,
+    pub execution_strategy: String,
+}
+
+/// Dynamic thresholds for slippage protection
+#[derive(Debug, Clone)]
+pub struct DynamicThresholds {
+    pub max_slippage: Decimal,
+    pub max_price_impact: Decimal,
+    pub liquidity_threshold: Decimal,
+    pub volatility_adjustment: Decimal,
+}
+
+/// MEV risk assessment
+#[derive(Debug, Clone)]
+pub struct MEVRiskAssessment {
+    pub risk_level: MEVRiskLevel,
+    pub sandwich_attack_probability: Decimal,
+    pub front_running_probability: Decimal,
+    pub recommended_protection: Vec<String>,
+}
+
+/// MEV risk levels
+#[derive(Debug, Clone)]
+pub enum MEVRiskLevel {
+    Low,
+    Medium,
+    High,
+    Critical,
+}
+
+/// Slippage protection strategy
+#[derive(Debug, Clone)]
+pub struct SlippageProtectionStrategy {
+    pub strategy_type: SlippageProtectionType,
+    pub protection_mechanisms: Vec<String>,
+    pub execution_parameters: std::collections::HashMap<String, Decimal>,
+}
+
+/// Slippage protection types
+#[derive(Debug, Clone)]
+pub enum SlippageProtectionType {
+    Static,
+    Dynamic,
+    Adaptive,
+    MEVResistant,
+}
+
+/// Impermanent loss analysis result
+#[derive(Debug, Clone)]
+pub struct ImpermanentLossAnalysis {
+    pub position_id: crate::risk_management::PositionId,
+    pub constant_product_il: Decimal,
+    pub black_scholes_il: Decimal,
+    pub monte_carlo_il: Decimal,
+    pub confidence_intervals: ConfidenceIntervals,
+    pub hedging_analysis: HedgingAnalysis,
+    pub calculated_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Confidence intervals for IL calculation
+#[derive(Debug, Clone)]
+pub struct ConfidenceIntervals {
+    pub confidence_95: (Decimal, Decimal),
+    pub confidence_99: (Decimal, Decimal),
+    pub expected_value: Decimal,
+}
+
+/// Hedging analysis result
+#[derive(Debug, Clone)]
+pub struct HedgingAnalysis {
+    pub hedge_effectiveness: Decimal,
+    pub optimal_hedge_ratio: Decimal,
+    pub hedging_cost: Decimal,
+    pub risk_reduction: Decimal,
+}
+
+/// Portfolio optimization result
+#[derive(Debug, Clone)]
+pub struct PortfolioOptimizationResult {
+    pub portfolio_id: PortfolioId,
+    pub current_allocation: Vec<crate::risk_management::LiquidityPosition>,
+    pub efficient_frontier: EfficientFrontier,
+    pub sharpe_optimal_allocation: AllocationResult,
+    pub risk_parity_allocation: AllocationResult,
+    pub rebalancing_recommendations: Vec<RebalancingRecommendation>,
+    pub optimization_timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+/// Efficient frontier calculation
+#[derive(Debug, Clone)]
+pub struct EfficientFrontier {
+    pub risk_return_points: Vec<(Decimal, Decimal)>,
+    pub optimal_portfolios: Vec<AllocationResult>,
+    pub sharpe_ratio_curve: Vec<Decimal>,
+}
+
+/// Allocation result
+#[derive(Debug, Clone)]
+pub struct AllocationResult {
+    pub asset_weights: std::collections::HashMap<AssetId, Decimal>,
+    pub expected_return: Decimal,
+    pub expected_risk: Decimal,
+    pub sharpe_ratio: Decimal,
+}
+
+/// Rebalancing recommendation
+#[derive(Debug, Clone)]
+pub struct RebalancingRecommendation {
+    pub asset_id: AssetId,
+    pub current_weight: Decimal,
+    pub target_weight: Decimal,
+    pub rebalancing_amount: Decimal,
+    pub urgency: RebalancingUrgency,
+}
+
+/// Stress test scenario
+#[derive(Debug, Clone)]
+pub struct StressTestScenario {
+    pub scenario_name: String,
+    pub scenario_type: StressTestType,
+    pub parameters: std::collections::HashMap<String, Decimal>,
+    pub duration: std::time::Duration,
+    pub severity: StressSeverity,
+}
+
+/// Stress test types
+#[derive(Debug, Clone)]
+pub enum StressTestType {
+    MarketCrash,
+    VolatilitySpike,
+    LiquidityCrisis,
+    CorrelationBreakdown,
+    BlackSwan,
+    Custom,
+}
+
+/// Stress severity levels
+#[derive(Debug, Clone)]
+pub enum StressSeverity {
+    Mild,
+    Moderate,
+    Severe,
+    Extreme,
+}
+
+/// Stress test result
+#[derive(Debug, Clone)]
+pub struct StressTestResult {
+    pub scenario: StressTestScenario,
+    pub simulation_results: SimulationResults,
+    pub portfolio_impact: PortfolioImpact,
+    pub resilience_assessment: ResilienceAssessment,
+    pub recommendations: Vec<String>,
+    pub test_timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+/// Simulation results
+#[derive(Debug, Clone)]
+pub struct SimulationResults {
+    pub total_simulations: u64,
+    pub successful_simulations: u64,
+    pub average_loss: Decimal,
+    pub maximum_loss: Decimal,
+    pub loss_distribution: Vec<Decimal>,
+    pub confidence_intervals: ConfidenceIntervals,
+}
+
+/// Portfolio impact assessment
+#[derive(Debug, Clone)]
+pub struct PortfolioImpact {
+    pub total_loss: Decimal,
+    pub max_drawdown: Decimal,
+    pub recovery_time: std::time::Duration,
+    pub affected_positions: Vec<crate::risk_management::PositionId>,
+}
+
+/// Resilience assessment
+#[derive(Debug, Clone)]
+pub struct ResilienceAssessment {
+    pub resilience_score: Decimal,
+    pub critical_vulnerabilities: Vec<String>,
+    pub recovery_mechanisms: Vec<String>,
+}
+
+/// Volatility risk assessment
+#[derive(Debug, Clone)]
+pub struct VolatilityRiskAssessment {
+    pub risk_score: Decimal,
+    pub current_volatility: Decimal,
+    pub volatility_trend: String,
+    pub risk_factors: Vec<String>,
+}
+
+/// Liquidity risk assessment
+#[derive(Debug, Clone)]
+pub struct LiquidityRiskAssessment {
+    pub risk_score: Decimal,
+    pub liquidity_depth: Decimal,
+    pub concentration_risk: Decimal,
+    pub flow_risk: Decimal,
+}
+
+/// Correlation risk assessment
+#[derive(Debug, Clone)]
+pub struct CorrelationRiskAssessment {
+    pub risk_score: Decimal,
+    pub correlation_matrix: std::collections::HashMap<(AssetId, AssetId), Decimal>,
+    pub tail_dependence: Decimal,
+    pub diversification_ratio: Decimal,
+}
+
+/// Volatility impact assessment
+#[derive(Debug, Clone)]
+pub struct VolatilityImpactAssessment {
+    pub impact_score: Decimal,
+    pub volatility_change: Decimal,
+    pub price_impact: Decimal,
+    pub risk_adjustment: Decimal,
+}
+
+/// Liquidity impact assessment
+#[derive(Debug, Clone)]
+pub struct LiquidityImpactAssessment {
+    pub impact_score: Decimal,
+    pub remaining_liquidity_percentage: Decimal,
+    pub depth_impact: Decimal,
+    pub flow_impact: Decimal,
+}
+
+/// Volatility metrics for pools
+#[derive(Debug, Clone)]
+pub struct VolatilityMetrics {
+    pub risk_score: Decimal,
+    pub daily_volatility: Decimal,
+    pub weekly_volatility: Decimal,
+    pub monthly_volatility: Decimal,
+    pub volatility_trend: String,
+}
+
+/// Liquidity metrics for pools
+#[derive(Debug, Clone)]
+pub struct LiquidityMetrics {
+    pub risk_score: Decimal,
+    pub total_liquidity: Decimal,
+    pub utilization_rate: Decimal,
+    pub depth_score: Decimal,
+    pub concentration_score: Decimal,
+}
+
+/// Correlation metrics for pools
+#[derive(Debug, Clone)]
+pub struct CorrelationMetrics {
+    pub risk_score: Decimal,
+    pub average_correlation: Decimal,
+    pub max_correlation: Decimal,
+    pub diversification_benefit: Decimal,
+}
