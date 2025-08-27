@@ -573,3 +573,224 @@ impl Default for YieldConfig {
         }
     }
 }
+
+/// Transaction for MEV analysis
+#[derive(Debug, Clone)]
+pub struct Transaction {
+    pub hash: String,
+    pub from: String,
+    pub to: String,
+    pub value: Decimal,
+    pub gas_price: Decimal,
+    pub gas_limit: u64,
+    pub input_data: Vec<u8>,
+    pub block_number: u64,
+    pub transaction_index: u32,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+/// Transaction pattern analysis result
+#[derive(Debug, Clone)]
+pub struct TransactionPatternAnalysis {
+    pub pattern_id: String,
+    pub transaction_hashes: Vec<String>,
+    pub validator_id: Option<qross_consensus::ValidatorId>,
+    pub extracted_value: Option<Decimal>,
+    pub price_impact: Option<Decimal>,
+    pub timing_analysis: Option<TimingAnalysis>,
+    pub confidence: Decimal,
+}
+
+/// Timing analysis for MEV detection
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TimingAnalysis {
+    pub sequence_timing: Vec<std::time::Duration>,
+    pub average_interval: std::time::Duration,
+    pub timing_variance: f64,
+    pub suspicious_patterns: Vec<String>,
+}
+
+/// Timing constraints for patterns
+#[derive(Debug, Clone)]
+pub struct TimingConstraints {
+    pub min_interval: std::time::Duration,
+    pub max_interval: std::time::Duration,
+    pub sequence_length: usize,
+}
+
+/// Parameter pattern for transaction matching
+#[derive(Debug, Clone)]
+pub struct ParameterPattern {
+    pub parameter_type: String,
+    pub pattern_regex: String,
+    pub value_range: Option<(Decimal, Decimal)>,
+}
+
+/// Value constraints for transactions
+#[derive(Debug, Clone)]
+pub struct ValueConstraints {
+    pub min_value: Option<Decimal>,
+    pub max_value: Option<Decimal>,
+    pub value_pattern: Option<String>,
+}
+
+/// Gas constraints for transactions
+#[derive(Debug, Clone)]
+pub struct GasConstraints {
+    pub min_gas_price: Option<Decimal>,
+    pub max_gas_price: Option<Decimal>,
+    pub gas_price_pattern: Option<String>,
+}
+
+/// Gas pattern for analysis
+#[derive(Debug, Clone)]
+pub struct GasPattern {
+    pub base_gas_price: Decimal,
+    pub gas_price_variance: Decimal,
+    pub gas_escalation_pattern: Vec<Decimal>,
+}
+
+/// Profit extraction information
+#[derive(Debug, Clone)]
+pub struct ProfitExtraction {
+    pub extraction_method: String,
+    pub estimated_profit: Decimal,
+    pub profit_source: String,
+}
+
+/// Price matrix for cross-chain analysis
+#[derive(Debug, Clone)]
+pub struct PriceMatrix {
+    prices: std::collections::HashMap<(ChainId, AssetId), PricePoint>,
+}
+
+impl PriceMatrix {
+    pub fn new() -> Self {
+        Self {
+            prices: std::collections::HashMap::new(),
+        }
+    }
+
+    pub fn set_price(&mut self, chain_id: ChainId, asset_id: AssetId, price_point: PricePoint) {
+        self.prices.insert((chain_id, asset_id), price_point);
+    }
+
+    pub fn get_all_assets(&self) -> std::collections::HashSet<AssetId> {
+        self.prices.keys().map(|(_, asset_id)| *asset_id).collect()
+    }
+
+    pub fn get_asset_prices(&self, asset_id: AssetId) -> Vec<(ChainId, PricePoint)> {
+        self.prices.iter()
+            .filter(|((_, aid), _)| *aid == asset_id)
+            .map(|((chain_id, _), price_point)| (*chain_id, price_point.clone()))
+            .collect()
+    }
+}
+
+/// Latency profile for oracles
+#[derive(Debug, Clone)]
+pub struct LatencyProfile {
+    pub average_latency: std::time::Duration,
+    pub p95_latency: std::time::Duration,
+    pub p99_latency: std::time::Duration,
+}
+
+impl LatencyProfile {
+    pub fn new() -> Self {
+        Self {
+            average_latency: std::time::Duration::from_millis(100),
+            p95_latency: std::time::Duration::from_millis(200),
+            p99_latency: std::time::Duration::from_millis(500),
+        }
+    }
+}
+
+/// Fair value result
+#[derive(Debug, Clone)]
+pub struct FairValueResult {
+    pub asset_id: AssetId,
+    pub fair_value: Decimal,
+    pub confidence: Decimal,
+    pub price_sources: std::collections::HashMap<ChainId, PricePoint>,
+    pub calculated_at: chrono::DateTime<chrono::Utc>,
+    pub volatility_adjustment: Decimal,
+    pub liquidity_adjustment: Decimal,
+}
+
+/// Fair value calculation result
+#[derive(Debug, Clone)]
+pub struct FairValue {
+    pub value: Decimal,
+    pub volatility_adjustment: Decimal,
+    pub liquidity_adjustment: Decimal,
+    pub confidence: Decimal,
+}
+
+/// Fair value validation result
+#[derive(Debug, Clone)]
+pub struct FairValueValidation {
+    pub is_valid: bool,
+    pub confidence: Decimal,
+    pub validation_errors: Vec<String>,
+}
+
+/// Opportunity validation result
+#[derive(Debug, Clone)]
+pub struct OpportunityValidation {
+    pub opportunity_id: uuid::Uuid,
+    pub is_valid: bool,
+    pub profit_potential: Decimal,
+    pub risk_score: Decimal,
+    pub execution_probability: Decimal,
+    pub validated_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Current profit calculation
+#[derive(Debug, Clone)]
+pub struct CurrentProfit {
+    pub profit_potential: Decimal,
+    pub execution_cost: Decimal,
+    pub net_profit: Decimal,
+    pub calculated_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Risk assessment result
+#[derive(Debug, Clone)]
+pub struct RiskAssessment {
+    pub overall_risk_score: Decimal,
+    pub execution_probability: Decimal,
+    pub risk_factors: std::collections::HashMap<String, Decimal>,
+    pub mitigation_suggestions: Vec<String>,
+}
+
+/// Arbitrage execution result
+#[derive(Debug, Clone)]
+pub struct ArbitrageExecutionResult {
+    pub execution_path: Vec<crate::arbitrage_detection::ExecutionStep>,
+    pub actual_profit: Decimal,
+    pub execution_time: std::time::Duration,
+    pub gas_used: u64,
+    pub slippage_experienced: Decimal,
+}
+
+/// Monitoring thread for real-time MEV detection
+#[derive(Debug, Clone)]
+pub struct MonitoringThread {
+    pub thread_id: String,
+    pub monitored_chains: Vec<ChainId>,
+    pub detection_algorithms: Vec<String>,
+}
+
+/// Alert system for MEV detection
+#[derive(Debug, Clone)]
+pub struct AlertSystem {
+    pub alert_channels: Vec<String>,
+    pub severity_thresholds: std::collections::HashMap<String, Decimal>,
+}
+
+/// Response coordinator for MEV mitigation
+#[derive(Debug, Clone)]
+pub struct ResponseCoordinator {
+    pub response_strategies: Vec<String>,
+    pub escalation_policies: std::collections::HashMap<String, String>,
+}
