@@ -1,0 +1,117 @@
+[package]
+name = "qross-liquidity-management"
+version = "0.1.0"
+edition = "2021"
+authors = ["Quantlink Team <dev@quantlink.network>"]
+description = "Cross-chain liquidity management system with AMM principles and arbitrage detection"
+license = "MIT"
+repository = "https://github.com/quantlink/qross"
+keywords = ["blockchain", "cross-chain", "liquidity", "amm", "defi"]
+categories = ["cryptography", "finance"]
+
+[dependencies]
+# Core dependencies
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"
+
+# Cryptography
+sha3 = "0.10"
+blake3 = "1.5"
+ed25519-dalek = "2.0"
+curve25519-dalek = "4.1"
+
+# Numeric computation
+num-bigint = { version = "0.4", features = ["serde"] }
+num-rational = { version = "0.4", features = ["serde"] }
+num-traits = "0.2"
+rust_decimal = { version = "1.33", features = ["serde-float"] }
+fixed = "1.24"
+
+# Mathematical operations
+nalgebra = "0.32"
+ndarray = "0.15"
+statrs = "0.16"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# UUID generation
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Collections and utilities
+dashmap = "5.5"
+parking_lot = "0.12"
+once_cell = "1.19"
+
+# Configuration
+config = "0.14"
+toml = "0.8"
+
+# Metrics and monitoring
+prometheus = "0.13"
+metrics = "0.22"
+
+# Database and storage
+rocksdb = "0.21"
+sled = "0.34"
+
+# Network and communication
+reqwest = { version = "0.11", features = ["json"] }
+tungstenite = "0.21"
+tokio-tungstenite = "0.21"
+
+# Internal dependencies
+qross-consensus = { path = "../consensus-aggregation" }
+qross-zk-verification = { path = "../zk-verification" }
+qross-p2p-network = { path = "../p2p-network" }
+qross-proof-aggregation = { path = "../zk-verification/proof-aggregation" }
+
+# AMM and DeFi specific
+uniswap-v3-math = "0.1"
+ethers = { version = "2.0", features = ["abigen", "ws"] }
+
+# Optimization
+rayon = "1.8"
+crossbeam = "0.8"
+
+[dev-dependencies]
+tokio-test = "0.4"
+proptest = "1.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+
+[features]
+default = ["std"]
+std = []
+no-std = []
+testing = ["proptest"]
+
+[[bench]]
+name = "amm_benchmarks"
+harness = false
+
+[[bench]]
+name = "liquidity_benchmarks"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.bench]
+opt-level = 3
+debug = true
