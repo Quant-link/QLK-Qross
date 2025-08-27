@@ -376,3 +376,92 @@ pub struct MonitoringRequirements {
     pub alert_thresholds: HashMap<String, rust_decimal::Decimal>,
     pub reporting_frequency: chrono::Duration,
 }
+
+/// Emergency system status
+#[derive(Debug, Clone)]
+pub struct EmergencySystemStatus {
+    pub active_emergencies: usize,
+    pub highest_emergency_level: crate::emergency_mechanisms::EmergencyLevel,
+    pub affected_components: std::collections::HashSet<crate::emergency_mechanisms::ComponentId>,
+    pub system_health_score: rust_decimal::Decimal,
+    pub last_updated: chrono::DateTime<chrono::Utc>,
+}
+
+/// Detected threat information
+#[derive(Debug, Clone)]
+pub struct DetectedThreat {
+    pub threat_id: uuid::Uuid,
+    pub threat_type: crate::emergency_mechanisms::EmergencyType,
+    pub threat_description: String,
+    pub detector_type: String,
+    pub confidence_score: rust_decimal::Decimal,
+    pub severity_score: rust_decimal::Decimal,
+    pub affected_components: Vec<crate::emergency_mechanisms::ComponentId>,
+    pub evidence: Vec<u8>,
+    pub detected_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Recovery plan for system restoration
+#[derive(Debug, Clone)]
+pub struct RecoveryPlan {
+    pub plan_id: uuid::Uuid,
+    pub affected_components: std::collections::HashSet<crate::emergency_mechanisms::ComponentId>,
+    pub recovery_steps: Vec<RecoveryStep>,
+    pub estimated_duration: chrono::Duration,
+    pub success_criteria: Vec<String>,
+    pub rollback_plan: Option<String>,
+}
+
+/// Recovery step in restoration process
+#[derive(Debug, Clone)]
+pub struct RecoveryStep {
+    pub step_id: uuid::Uuid,
+    pub step_type: RecoveryStepType,
+    pub target_component: crate::emergency_mechanisms::ComponentId,
+    pub step_description: String,
+    pub dependencies: Vec<uuid::Uuid>,
+    pub timeout: chrono::Duration,
+    pub validation_required: bool,
+}
+
+/// Recovery step types
+#[derive(Debug, Clone)]
+pub enum RecoveryStepType {
+    HealthCheck,
+    ComponentRestart,
+    StateValidation,
+    IntegrityVerification,
+    PerformanceTest,
+    SecurityAudit,
+}
+
+/// Recovery result
+#[derive(Debug, Clone)]
+pub struct RecoveryResult {
+    pub success: bool,
+    pub execution_time: std::time::Duration,
+    pub recovered_components: Vec<crate::emergency_mechanisms::ComponentId>,
+    pub failed_components: Vec<crate::emergency_mechanisms::ComponentId>,
+    pub error_messages: Vec<String>,
+    pub integrity_verified: bool,
+}
+
+/// Isolation result
+#[derive(Debug, Clone)]
+pub struct IsolationResult {
+    pub success: bool,
+    pub execution_time: std::time::Duration,
+    pub affected_components: Vec<crate::emergency_mechanisms::ComponentId>,
+    pub side_effects: Vec<String>,
+    pub error_messages: Vec<String>,
+}
+
+/// System integrity verification result
+#[derive(Debug, Clone)]
+pub struct IntegrityVerificationResult {
+    pub is_valid: bool,
+    pub verification_time: std::time::Duration,
+    pub verified_components: Vec<crate::emergency_mechanisms::ComponentId>,
+    pub failed_verifications: Vec<String>,
+    pub confidence_score: rust_decimal::Decimal,
+}
