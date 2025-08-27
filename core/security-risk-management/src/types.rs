@@ -181,3 +181,198 @@ impl Default for MonitoringConfig {
         }
     }
 }
+
+/// Parameter identifier for governance
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ParameterId(pub String);
+
+impl ParameterId {
+    pub fn new(id: &str) -> Self {
+        Self(id.to_string())
+    }
+}
+
+/// Parameter impact analysis
+#[derive(Debug, Clone)]
+pub struct ParameterImpactAnalysis {
+    pub security_impact_score: rust_decimal::Decimal,
+    pub performance_impact_score: rust_decimal::Decimal,
+    pub economic_impact_score: rust_decimal::Decimal,
+    pub operational_complexity: rust_decimal::Decimal,
+    pub rollback_difficulty: rust_decimal::Decimal,
+    pub affected_components: Vec<String>,
+}
+
+/// Validation requirement for parameters
+#[derive(Debug, Clone)]
+pub struct ValidationRequirement {
+    pub requirement_type: ValidationType,
+    pub validation_criteria: String,
+    pub required_confidence: rust_decimal::Decimal,
+    pub timeout: chrono::Duration,
+}
+
+/// Validation types
+#[derive(Debug, Clone)]
+pub enum ValidationType {
+    MathematicalProof,
+    SecurityAudit,
+    PerformanceBenchmark,
+    EconomicModeling,
+    SimulationTesting,
+}
+
+/// Dependency analysis result
+#[derive(Debug, Clone)]
+pub struct DependencyAnalysis {
+    pub direct_dependencies: Vec<ParameterId>,
+    pub indirect_dependencies: Vec<ParameterId>,
+    pub circular_dependencies: Vec<Vec<ParameterId>>,
+    pub dependency_graph: serde_json::Value,
+    pub critical_path: Vec<ParameterId>,
+}
+
+/// Validation results for proposals
+#[derive(Debug, Clone)]
+pub struct ValidationResults {
+    pub mathematical_validation: bool,
+    pub security_validation: bool,
+    pub performance_validation: bool,
+    pub economic_validation: bool,
+    pub invariant_validation: bool,
+    pub validation_errors: Vec<String>,
+    pub validation_warnings: Vec<String>,
+    pub confidence_score: rust_decimal::Decimal,
+}
+
+impl ValidationResults {
+    pub fn new() -> Self {
+        Self {
+            mathematical_validation: false,
+            security_validation: false,
+            performance_validation: false,
+            economic_validation: false,
+            invariant_validation: false,
+            validation_errors: Vec::new(),
+            validation_warnings: Vec::new(),
+            confidence_score: rust_decimal::Decimal::ZERO,
+        }
+    }
+}
+
+/// Vote outcome for proposals
+#[derive(Debug, Clone)]
+pub enum VoteOutcome {
+    Approved,
+    Rejected,
+    Pending,
+}
+
+/// Vote result calculation
+#[derive(Debug, Clone)]
+pub struct VoteResult {
+    pub total_voting_power: rust_decimal::Decimal,
+    pub yes_votes: rust_decimal::Decimal,
+    pub no_votes: rust_decimal::Decimal,
+    pub abstain_votes: rust_decimal::Decimal,
+    pub participation_rate: rust_decimal::Decimal,
+    pub quorum_met: bool,
+    pub threshold_met: bool,
+    pub decision_reached: bool,
+    pub outcome: VoteOutcome,
+}
+
+/// Validator weight update
+#[derive(Debug, Clone)]
+pub struct ValidatorWeightUpdate {
+    pub validator_id: ValidatorId,
+    pub stake_weight: u64, // Simplified for now
+    pub reputation_score: u64, // Simplified for now
+    pub governance_participation: rust_decimal::Decimal,
+    pub delegation_power: rust_decimal::Decimal,
+}
+
+/// Execution result for proposals
+#[derive(Debug, Clone)]
+pub struct ExecutionResult {
+    pub success: bool,
+    pub execution_time: std::time::Duration,
+    pub affected_components: Vec<String>,
+    pub rollback_required: bool,
+    pub error_messages: Vec<String>,
+    pub success_metrics: HashMap<String, rust_decimal::Decimal>,
+}
+
+/// Validation result for execution
+#[derive(Debug, Clone)]
+pub struct ExecutionValidationResult {
+    pub is_valid: bool,
+    pub validation_errors: Vec<String>,
+    pub risk_assessment: rust_decimal::Decimal,
+    pub recommended_delay: Option<chrono::Duration>,
+}
+
+/// Rollback plan for failed executions
+#[derive(Debug, Clone)]
+pub struct RollbackPlan {
+    pub rollback_steps: Vec<RollbackStep>,
+    pub rollback_timeout: chrono::Duration,
+    pub rollback_validation: Vec<ValidationCheckpoint>,
+}
+
+/// Rollback step
+#[derive(Debug, Clone)]
+pub struct RollbackStep {
+    pub step_id: uuid::Uuid,
+    pub rollback_action: RollbackAction,
+    pub target_parameter: ParameterId,
+    pub previous_value: String, // Simplified for now
+    pub validation_required: bool,
+}
+
+/// Rollback action types
+#[derive(Debug, Clone)]
+pub enum RollbackAction {
+    RestoreParameter,
+    RestartComponent,
+    RevertConfiguration,
+    RestoreDatabase,
+    EmergencyStop,
+}
+
+/// Validation checkpoint
+#[derive(Debug, Clone)]
+pub struct ValidationCheckpoint {
+    pub checkpoint_id: uuid::Uuid,
+    pub validation_type: ValidationType,
+    pub success_criteria: Vec<String>,
+    pub timeout: chrono::Duration,
+}
+
+/// Rollback trigger
+#[derive(Debug, Clone)]
+pub enum RollbackTrigger {
+    PerformanceDegradation { threshold: rust_decimal::Decimal },
+    SecurityViolation { severity: String },
+    SystemFailure { component: String },
+    UserDefinedMetric { metric: String, threshold: rust_decimal::Decimal },
+}
+
+/// Success criterion for execution
+#[derive(Debug, Clone)]
+pub struct SuccessCriterion {
+    pub criterion_id: uuid::Uuid,
+    pub metric_name: String,
+    pub target_value: rust_decimal::Decimal,
+    pub tolerance: rust_decimal::Decimal,
+    pub measurement_window: chrono::Duration,
+}
+
+/// Monitoring requirements for execution
+#[derive(Debug, Clone)]
+pub struct MonitoringRequirements {
+    pub metrics_to_monitor: Vec<String>,
+    pub monitoring_duration: chrono::Duration,
+    pub alert_thresholds: HashMap<String, rust_decimal::Decimal>,
+    pub reporting_frequency: chrono::Duration,
+}
