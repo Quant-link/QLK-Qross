@@ -423,8 +423,6 @@ Future development will focus on additional blockchain network integrations, enh
 
 ---
 
-# README.md
-
 # Quantlink Qross Cross-Chain Infrastructure
 
 > Zero-knowledge verified cross-chain interoperability with mathematical security guarantees
